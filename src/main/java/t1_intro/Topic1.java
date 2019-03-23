@@ -1,10 +1,17 @@
 package t1_intro;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 public class Topic1 {
     /*
         引用的问题
      */
-    public static void main(String[] args) {
+    public static void main(String[] args){
         //变量值 引用  常量池
         System.out.println("---------Integer/Long---------");
         Integer int1=60;
@@ -28,6 +35,22 @@ public class Topic1 {
         System.out.println(str3==str4);
         System.out.println(str1==str4.intern());
 
+        new ConcurrentHashMap<String,String>();
+        new HashMap<String,String>();
+        new StringBuffer();
+        new StringBuilder();
+        String s = new String("abc");
+//        Executors.newFixedThreadPool();
+//        Executors.newCachedThreadPool();
+//        Executors.newSingleThreadExecutor();
+//        ArrayBlockingQueue;
+//        LinkedBlockingQueue;
+//        SynchronousQueue;
+//        ReentrantLock;
+//        Semaphore;
+//        ReentrantReadWriteLock;
+//        FutureTask;
+//        CountDownLatch;
+//        synchronized;
     }
-
 }

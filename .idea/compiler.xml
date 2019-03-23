@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <option name="USE_RELEASE_OPTION" value="false" />
     <annotationProcessing>
       <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -11,6 +10,10 @@
         <module name="ssm" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="7" />
+    <bytecodeTargetLevel target="7">
+      <module name="boot" target="1.8" />
+      <module name="javalearn" target="1.5" />
+      <module name="ssm" target="1.5" />
+    </bytecodeTargetLevel>
   </component>
 </project>
