@@ -1,5 +1,10 @@
 package t4_jvm;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Vector;
+
 public class ThreadLocalTest {
     static final ThreadLocal<Object> threadLocal = new ThreadLocal<Object>();
 

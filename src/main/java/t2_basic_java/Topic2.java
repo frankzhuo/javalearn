@@ -3,11 +3,10 @@ package t2_basic_java;
 public class Topic2 {
     /*
         0. Java执行过程、Java组成、Java的特点、Java和C++、C的区别。
-            1.所有属性的设为默认值
-            2.父类中的静态属性初始化，静态代码块，静态方法的声明（按照出现顺序）
-            3.子类中的静态属性初始化，静态代码块，静态方法的声明（按照出现顺序）
-            4.父类中的非静态属性初始化，普通代码块，普通方法的声明（按照出现顺序），父类的构造方法
-            5.子类中的非静态属性初始化，普通代码块，普通方法的声明（按照出现顺序），子类的构造方法
+            1.父类中的静态属性初始化，静态代码块，静态方法的声明（按照出现顺序）
+            2.子类中的静态属性初始化，静态代码块，静态方法的声明（按照出现顺序）
+            3.父类中的非静态属性初始化，普通代码块，普通方法的声明（按照出现顺序），父类的构造方法
+            4.子类中的非静态属性初始化，普通代码块，普通方法的声明（按照出现顺序），子类的构造方法
 
             1.java编程语言
             2.java文件格式
@@ -83,16 +82,12 @@ public class Topic2 {
         String b = "bbb";
         swap(a,b);
         System.out.println(a+"  "+b);
-        new StringBuilder();
-        new StringBuffer();
     }
 
     static void swap(String a, String b){
         String temp=a;
         a=b;
         b=temp;
-        new Object();
-        new String();
     }
 
 }

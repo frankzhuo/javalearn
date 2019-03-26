@@ -51,7 +51,7 @@ class StarvingSingleton {
 }
 
 
-class LazySingleton {
+class LazySingleton {//不是线程安全
 
     // 私有构造
     private LazySingleton() {}
@@ -66,7 +66,23 @@ class LazySingleton {
     }
 }
 
-class LazySingleton2 {
+class LazySingleton1 {//线程安全 但每次都要进行同步 效率低
+
+    // 私有构造
+    private LazySingleton1() {}
+
+    private static LazySingleton1 single = null;
+
+    public static synchronized LazySingleton1 getInstance() {
+        if(single == null){
+            single = new LazySingleton1();
+        }
+        return single;
+    }
+}
+
+
+class LazySingleton2 {//double check 线程安全 效率较高
 
     // 私有构造
     private LazySingleton2() {}
@@ -85,24 +101,7 @@ class LazySingleton2 {
     }
 }
 
-
-class LazySingleton1 {
-
-    // 私有构造
-    private LazySingleton1() {}
-
-    private static LazySingleton1 single = null;
-
-    public static synchronized LazySingleton1 getInstance() {
-        if(single == null){
-            single = new LazySingleton1();
-        }
-        return single;
-    }
-}
-
-
-class LazySingleton3 {
+class LazySingleton3 { //静态内部类
 
     private static class SingletonHolder {
         /*
@@ -118,6 +117,13 @@ class LazySingleton3 {
 
     public static LazySingleton3 getInstance() {
         return SingletonHolder.INSTANCE;
+    }
+}
+
+enum Singleton {//使用枚举
+    INSTANCE;
+    public void whateverMethod() {
+
     }
 }
 

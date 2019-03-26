@@ -22,7 +22,7 @@ public class Topic4 {
                 而栅栏将被重置以便下次使用。
 
         （4）Exchanger
-                Exchanger可以在两个线程之间交换数据，只能是2个线程，他不支持更多的线程之间互换数据。
+                 Exchanger可以在两个线程之间交换数据，只能是2个线程，他不支持更多的线程之间互换数据。
                 一个线程中，调用Exchanger的exchange方法，进入阻塞状态，直到另一个持有该实例的线程也调用exchange方法。
 
         （5）SynchronousQueue
