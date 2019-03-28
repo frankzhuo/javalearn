@@ -1,5 +1,11 @@
 package t3_concurrent_java;
 
+import java.util.LinkedList;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.AbstractQueuedSynchronizer;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 public class Topic6 {
     /*
         1.ConcurrentHashMap
@@ -24,8 +30,8 @@ public class Topic6 {
                             MarkWord部分标志位
                    其它         是否是偏向锁  锁标志位
                                 0           01       无锁
-                    线程ID       1          01       偏向锁
-                    锁记录指针              00       轻量级锁
+                   线程ID       1           01       偏向锁
+                   锁记录指针               00       轻量级锁
                                             10       重量级锁
                                             11       GC标志位
                 ———————————————————————————————————————————————
@@ -53,10 +59,12 @@ public class Topic6 {
                 "偏向锁"适用于只有一个线程访问同步块的场景，降低获取锁的代价。
 
             轻量级锁：
-                    1.拷贝对象当前的 MarkWord 到锁记录；
-                    2.CAS将MarkWord设置为锁记录的指针，若成功执行步骤3，否则执行步骤4；
-                    3.设置锁标志位，获得轻量级锁；
-                    4.自旋获取锁，若自旋超过一定次数，锁膨胀为 重量级锁。
+                    1.检查锁标志位，是否是无锁状态，线程在栈帧中建立锁记录空间
+                    2.拷贝对象当前的 MarkWord 到锁记录；
+                    3.CAS将MarkWord设置为锁记录的指针，CAS将owner指向对象的MarkWord,若成功执行步骤4，否则执行步骤5；
+                    4.设置锁标志位，获得轻量级锁；
+                    5.检查MarkWord是否指向当前线程，如果指向说明线程已经获得了偏向锁，执行同步代码块，不指向说明产生了锁
+                      竞争，锁膨胀为重量级锁，当前线程通过自旋获取锁。
 
             重量级锁：
                     Synchronized是通过对象内部的一个叫做监视器锁（monitor）来实现的。
@@ -70,15 +78,15 @@ public class Topic6 {
           ————————————————————————————————————————————————————————————————————————————————————————————————————————————
             锁           优点                              缺点                       适用场景
 
-            偏向锁     加锁和解锁不需要额外的消耗，     如果线程间存在锁竞争，              适用于只有一个线程访问同步块场景。
+            偏向锁    加锁和解锁不需要额外的消耗，     如果线程间存在锁竞争，         适用于只有一个线程访问同步块场景。
                       和执行非同步方法比仅存在         会带来额外的锁撤销的消耗。
                       纳秒级的差距。
           ————————————————————————————————————————————————————————————————————————————————————————————————————————————
-            轻量级锁   竞争的线程不会阻塞，            如果始终得不到锁竞争的线程          追求响应时间。
-                      提高了程序的响应速度。          使用自旋会消耗CPU。                同步块执行速度非常快。
+            轻量级锁  减少了重量级锁使用操作系统       如果始终得不到锁竞争的线程     线程交替执行同步代码块
+                      互斥量带来得性能消耗。           使用自旋会消耗CPU。            同步块执行速度非常快。
           ————————————————————————————————————————————————————————————————————————————————————————————————————————————
-            重量级锁   线程竞争不使用自旋，            线程阻塞，响应时间缓慢。            追求吞吐量。
-                      不会消耗CPU。                                                  同步块执行速度较长。
+            重量级锁  线程竞争不使用自旋，             线程阻塞，响应时间缓慢。       多个线程竞争激烈
+                      不会消耗CPU。                                                   同步块执行速度较长。
           ————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
             其它锁的优化：
@@ -89,7 +97,7 @@ public class Topic6 {
             补充：
                 CAS的三大问题：（1）ABA问题，（2）循环时间过长，浪费CPU，（3）只能保证一个变量的原子操作
 
-                compareAndSet(A,B)      compareAndSet(B,A) compareAndSet(A,B)
+                compareAndSet(A,B)      compareAndSet(B,A)  compareAndSet(A,B)
                 引入版本号
 
 
@@ -153,7 +161,7 @@ public class Topic6 {
             JDK1.8
                     1.8中放弃了Segment臃肿的设计，取而代之的是采用Node + CAS + Synchronized来保证并发安全进行实现
 
-                    改进一：取消segments字段，直接采用transient volatile HashEntry<K,V>[] table保存数据，
+                    改进一：取消segments字段，直接采用transient volatile Node<K,V>[] table保存数据，
                     采用table数组元素作为锁，从而实现了对每一行数据进行加锁，进一步减少并发冲突的概率。
 
                     改进二：将原先table数组＋单向链表的数据结构，变更为table数组＋单向链表＋红黑树的结构。
@@ -215,7 +223,7 @@ public class Topic6 {
                     内部类NonfairSync
 
         7.ReentrantReadWriteLock
-                state：高16位表示读状态，低16位表示写状态
+                state：高16位表示读状态(获得读锁的线程数)，低16位表示写状态(重入次数)
                 内部抽象类Sync
                     内部类FairSync
 
@@ -271,16 +279,72 @@ public class Topic6 {
 
                         添加Work的过程需要对mainLock加锁（mainLock用于控制对Worker集合的访问）。
 
-                        Worker 实现了Runnable接口，并继承了 AbstractQueuedSynchronizer 类，用于实现shutdown时避免，需要获取该Worker的锁，
-                        才能中断该线程，避免中断正在执行的线程。
+                        Worker 实现了Runnable接口，并继承了 AbstractQueuedSynchronizer 类，用于实现shutdown时避免
+                        中断正在执行的线程，需要获取该Worker的锁，才能中断该线程。
 
 
                 ThreadPoolExecutor的设计又很多巧妙的地方，在此不一一列举，可以思考一个问题：
                     ThreadPoolExecutor用哪些方法实现了同步，并且为什么在那种情况下用这种同步方法？
 
         10. ThreadLocal
+            创建只能被同一个线程访问的变量
             每个线程可以往其内部存入一个对象，其它线程获取不到，只有本线程可以获取
             内存泄漏
 
+           每一个线程内部有一个 ThreadLocal.ThreadLocalMap threadLocals = null;变量
+           ThreadLocalMap{
+                static class Entry extends WeakReference<ThreadLocal<?>>{
+                    Object value;
+                    Entry(ThreadLocal<?> k, Object v) {
+                        super(k);
+                        value = v;
+                    }
+                }
+
+                private Entry[] table;
+           }
+
+           由于Entry存储的是ThreadLocal的弱引用，当其它地方不存在ThreadLocal的强引用的时候，ThreadLocal会被回收，而value
+           不会被回收，会造成内存泄漏，调用ThreadLocal的remove()方法进行了清理，不会造成内存泄露。
+
+            public class ThreadLocalExample {
+
+                public static class MyRunnable implements Runnable {
+
+                    private ThreadLocal threadLocal = new ThreadLocal();
+
+                    @Override
+                    public void run() {
+                        threadLocal.set((int) (Math.random() * 100D));
+                        try {
+                        Thread.sleep(2000);
+                        } catch (InterruptedException e) {
+
+                        }
+                        System.out.println(threadLocal.get());
+                    }
+                }
+
+                public static void main(String[] args) {
+                     MyRunnable sharedRunnableInstance = new MyRunnable();
+                     Thread thread1 = new Thread(sharedRunnableInstance);
+                     Thread thread2 = new Thread(sharedRunnableInstance);
+                     thread1.start();
+                     thread2.start();
+                }
+}
+
+
      */
+    public static void main(String[] args) {
+        new ConcurrentHashMap();
+        new ReentrantLock();
+        new ReentrantReadWriteLock();
+        new Thread();
+//        new ThreadPoolExecutor();
+//        new AbstractQueuedSynchronizer();
+//        new ArrayBlockingQueue<Integer>();
+//        new LinkedBlockingQueue<Integer>();
+        new SynchronousQueue();
+    }
 }

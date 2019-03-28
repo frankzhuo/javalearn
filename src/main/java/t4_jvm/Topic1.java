@@ -31,6 +31,8 @@ public class Topic1 {
                    使得各个内存区域的总和大于物理内存限制（包括物理上的和操作系统级的限制），从而导致动态扩展时出现OutOfMemoryError异常。
 
                    一般的应用开发用的少。
+                   1.8同1.7比，最大的差别就是：元数据区取代了永久代。元空间的本质和永久代类似，都是对JVM规范中方法区的实
+                   现。不过元空间与永久代之间最大的区别在于：元数据空间并不在虚拟机中，而是使用本地内存。
 
         2.对象的垃圾回收（GC）规则
             引用计数法：通过引用计数来判断一个对象是否可以被回收。
@@ -85,7 +87,7 @@ public class Topic1 {
                 注意的问题：
                     1.垃圾回收是否是多线程并行处理
                     2.垃圾回收线程和用户线程是否可以并发进行  ————> Stop the world问题，造成系统的延迟卡顿
-                （并行：同时进行；并发：交替执行，不一定并行）
+                   （并行：同时进行；并发：交替执行，不一定并行）
                     3.管理的区域，采用的垃圾回收算法
 
                 Serial收集器：
@@ -251,7 +253,9 @@ public class Topic1 {
         10.ThreadLocal
 
             实现原理：
-                每个线程内部包含一个Map（结构类似于1.7版本的HashMap）  threadLocals（ java.lang.Thread.threadLocals ）
+                每个线程内部包含一个Map（结构类似于1.7版本的HashMap ThreadLocal的内部类ThreadLocalMap）threadLocals
+                （ java.lang.Thread.threadLocals ）ThreadLocalMap有一个Entry[]数组成员 Entry数组存储键值 键为ThreadLocal
+                的引用 值为向ThreadLocal里设置的值
                 （1）向 ThreadLocal set对象时，向这个map放入该对象，并以 ThreadLocal 为 key。
                 （2）从 ThreadLocal get对象时，以 ThreadLocal 为 key从 threadLocals 取出对象。
 
@@ -275,12 +279,12 @@ public class Topic1 {
 
         SoftReference<Map> reference2=new SoftReference(new HashMap());
         System.out.println(reference2.get());
-        System.gc();//通知GVM回收资源
+        System.gc();//通知JVM回收资源
         System.out.println(reference2.get());
 
         WeakReference<Map> reference1=new WeakReference(new HashMap());
         System.out.println(reference1.get());
-        System.gc();//通知GVM回收资源
+        System.gc();//通知JVM回收资源
         System.out.println(reference1.get());
 
         ReferenceQueue queue = new ReferenceQueue();
